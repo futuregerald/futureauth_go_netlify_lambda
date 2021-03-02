@@ -19,7 +19,7 @@ func main() {
 	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/.netlify/functions/signup", api.LambdaHandler)
+	r.Post("/.netlify/functions/signup", api.LambdaHandler)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" {
 		log.Fatal(http.ListenAndServe(":3000", nil))
 	} else {

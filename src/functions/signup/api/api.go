@@ -12,6 +12,7 @@ import (
 func LambdaHandler(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Print(err)
 		if err := helpers.SendJSON(w, http.StatusUnprocessableEntity, "Invalid body"); err != nil {
 			log.Print(err)
 		}
