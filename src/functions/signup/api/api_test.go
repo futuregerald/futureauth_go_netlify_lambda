@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"net/http"
@@ -13,7 +13,7 @@ func TestGetSuccess(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(lambdaHandler)
+	handler := http.HandlerFunc(LambdaHandler)
 
 	handler.ServeHTTP(rr, req)
 

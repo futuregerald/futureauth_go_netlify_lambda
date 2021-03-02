@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/apex/gateway"
 	"github.com/futuregerald/futureauth-go/src/functions/signup/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,5 +20,9 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/.netlify/functions/signup", api.LambdaHandler)
-	log.Fatal(http.ListenAndServe(":3000", r))
+	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" {
+		log.Fatal(http.ListenAndServe(":3000", nil))
+	} else {
+		log.Fatal(gateway.ListenAndServe(":3000", nil))
+	}
 }
