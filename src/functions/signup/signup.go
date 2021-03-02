@@ -13,16 +13,16 @@ import (
 )
 
 func main() {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Print("Error loading .env file")
-	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Post("/.netlify/functions/signup", api.LambdaHandler)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" {
-		log.Fatal(http.ListenAndServe(":3000", nil))
+		err := godotenv.Load("../.env")
+		if err != nil {
+			log.Print("Error loading .env file")
+		}
+		log.Fatal(http.ListenAndServe(":3030", r))
 	} else {
-		log.Fatal(gateway.ListenAndServe(":3000", nil))
+		log.Fatal(gateway.ListenAndServe(":3000", r))
 	}
 }
