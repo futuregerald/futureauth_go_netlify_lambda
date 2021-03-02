@@ -18,7 +18,4 @@ func TestGetSuccess(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-
-	expected := "Looks like you made it to testfunc2!"
-	assert.Equal(t, expected, rr.Body.String())
 }
