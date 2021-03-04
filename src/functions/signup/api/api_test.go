@@ -21,7 +21,8 @@ func TestGetSuccess(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(LambdaHandler)
+	client := New()
+	handler := http.HandlerFunc(client.LambdaHandler)
 
 	handler.ServeHTTP(rr, req)
 
