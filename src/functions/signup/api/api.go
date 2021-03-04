@@ -5,11 +5,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/futuregerald/futureauth-go/src/functions/db"
 	"github.com/futuregerald/futureauth-go/src/functions/helpers"
 )
 
-func LambdaHandler(w http.ResponseWriter, r *http.Request) {
+func (*Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Print(err)
@@ -18,6 +20,7 @@ func LambdaHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	var parsedBody SignupData
 	if err := json.Unmarshal(reqBody, &parsedBody); err != nil {
 		log.Print(err)
@@ -30,4 +33,12 @@ func LambdaHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 
+}
+
+func New() *Client {
+	mongoURI := os.Getenv("MONGO_URI")
+	log.Print("mongoURI", mongoURI)
+	return &Client{
+		Db: db.Connect(mongoURI),
+	}
 }
