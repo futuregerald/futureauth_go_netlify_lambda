@@ -37,7 +37,9 @@ func (*Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
 
 func New() *Client {
 	mongoURI := os.Getenv("MONGO_URI")
-	log.Print("mongoURI", mongoURI)
+	if mongoURI == "" {
+		return &Client{}
+	}
 	return &Client{
 		Db: db.Connect(mongoURI),
 	}
