@@ -11,7 +11,7 @@ import (
 	"github.com/futuregerald/futureauth-go/src/functions/helpers"
 )
 
-func (*Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
+func LambdaHandler(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Print(err)
@@ -35,12 +35,12 @@ func (*Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func New() *Client {
+func New() error {
 	mongoURI := os.Getenv("MONGO_URI")
+	db.Connect(mongoURI)
 	if mongoURI == "" {
-		return &Client{}
+		return db.Connect(mongoURI)
 	}
-	return &Client{
-		Db: db.Connect(mongoURI),
-	}
+	log.Print("No mongoDB URI provided. Api starting without a data store")
+	return nil
 }

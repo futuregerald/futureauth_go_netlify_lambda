@@ -1,31 +1,25 @@
 package db
 
 import (
-	"context"
 	"log"
-	"time"
+	"os"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/kamva/mgm/v3"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-func Connect(uri string) *mongo.Client {
-	log.Print("The URI is: ", uri)
-	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
-	if err != nil {
-		log.Fatal(err)
+// TODO create method on user to validate password
+
+func Connect(uri string) error {
+	return mgm.SetDefaultConfig(nil, "local_dev", options.Client().ApplyURI(uri))
+}
+
+func New() error {
+	mongoURI := os.Getenv("MONGO_URI")
+	Connect(mongoURI)
+	if mongoURI == "" {
+		return Connect(mongoURI)
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Ping(context.Background(), readpref.Primary())
-	if err != nil {
-		log.Fatal("Couldn't connect to the database", err)
-	} else {
-		log.Println("Connected!")
-	}
-	return client
+	log.Print("No mongoDB URI provided. Api starting without a data store")
+	return nil
 }
