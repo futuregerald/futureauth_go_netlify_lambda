@@ -69,18 +69,32 @@ func (*User) ComparePassword(password, hash string) (bool, error) {
 	return (subtle.ConstantTimeCompare(decodedHash, comparisonHash) == 1), nil
 }
 
-// TODO populate NewUser method as per User struct
 func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
+
 	newUser := User{
-		Email:        email,
-		Password:     password,
-		AppMetaData:  appMetaData,
-		UserMetaData: userMetaData,
-		Confirmed:    confirmed,
-		IsAdmin:      isAdmin,
-		Disabled:     disabled,
-		Roles:        roles,
+		Email:     email,
+		password:  password,
+		Confirmed: confirmed,
+		IsAdmin:   isAdmin,
+		Disabled:  disabled,
+		Roles:     roles,
 	}
+
+	if appMetaData != nil {
+		stringAppMetaData, err := json.Marshal(&appMetaData)
+		if err != nil {
+			return &User{}, errors.Wrap(err, "Unable to marshal appMetaData")
+		}
+		newUser.AppMetaData = string(stringAppMetaData)
+	}
+	if userMetaData != nil {
+		stringUserMetaData, err := json.Marshal(&userMetaData)
+		if err != nil {
+			return &User{}, errors.Wrap(err, "Unable to marshal appMetaData")
+		}
+		newUser.UserMetaData = string(stringUserMetaData)
+	}
+
 	if tenant != "" {
 		tenantID, err := primitive.ObjectIDFromHex(tenant)
 		if err != nil {
@@ -94,18 +108,18 @@ func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, 
 	return &newUser, nil
 }
 
-// TODO fill out creating to use argon2 to create password hash
-func (user *User) Creating() error {
+// This is a pre-save hook that hashes the password
+func (user *User) Saving() error {
 	// Call to DefaultModel Creating hook
 	if err := user.DefaultModel.Creating(); err != nil {
 		return err
 	}
-	passwordHash, err := user.GeneratePassword(user.getArgonConfig(), user.Password)
+	passwordHash, err := user.GeneratePassword(user.getArgonConfig(), user.password)
 	if err != nil {
 		log.Print("Unable to hash password")
-		user.Password = ""
+		user.password = ""
 		return errors.Wrap(err, "Unable to hash password")
 	}
-	user.Password = passwordHash
+	user.password = passwordHash
 	return nil
 }
