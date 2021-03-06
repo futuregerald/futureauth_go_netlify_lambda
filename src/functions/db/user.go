@@ -4,10 +4,12 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
 
+	"github.com/kamva/mgm/v3"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/argon2"
@@ -68,20 +70,28 @@ func (*User) ComparePassword(password, hash string) (bool, error) {
 }
 
 // TODO populate NewUser method as per User struct
-func NewUser(email, tenant string, Tenant int) *User {
-	var tenantID primitive.ObjectID
-	var err error
+func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
+	newUser := User{
+		Email:        email,
+		Password:     password,
+		AppMetaData:  appMetaData,
+		UserMetaData: userMetaData,
+		Confirmed:    confirmed,
+		IsAdmin:      isAdmin,
+		Disabled:     disabled,
+		Roles:        roles,
+	}
 	if tenant != "" {
-		tenantID, err = primitive.ObjectIDFromHex(tenant)
+		tenantID, err := primitive.ObjectIDFromHex(tenant)
 		if err != nil {
-
+			return &User{}, errors.Wrap(err, "Invalid Tenant ID")
 		}
+		newUser.Tenant = tenantID
 	}
-
-	return &User{
-		Email:  email,
-		Tenant: tenantID,
+	if err := mgm.Coll(&newUser).Create(&newUser); err != nil {
+		return &User{}, errors.Wrap(err, "Unable to create new user")
 	}
+	return &newUser, nil
 }
 
 // TODO fill out creating to use argon2 to create password hash
