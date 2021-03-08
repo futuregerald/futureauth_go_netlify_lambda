@@ -16,8 +16,7 @@ func Connect(uri string) error {
 
 func New() error {
 	mongoURI := os.Getenv("MONGO_URI")
-	Connect(mongoURI)
-	if mongoURI == "" {
+	if mongoURI != "" {
 		return Connect(mongoURI)
 	}
 	log.Print("No mongoDB URI provided. Api starting without a data store")
