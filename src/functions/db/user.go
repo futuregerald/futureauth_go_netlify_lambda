@@ -9,7 +9,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/kamva/mgm/v3"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/argon2"
@@ -24,7 +23,7 @@ func (*User) getArgonConfig() *PasswordConfig {
 	}
 }
 
-func (*User) GeneratePassword(c *PasswordConfig, password string) (string, error) {
+func (*User) generatePasswordHash(c *PasswordConfig, password string) (string, error) {
 
 	// Generate a Salt
 	salt := make([]byte, 16)
@@ -43,7 +42,7 @@ func (*User) GeneratePassword(c *PasswordConfig, password string) (string, error
 	return full, nil
 }
 
-func (*User) ComparePassword(password, hash string) (bool, error) {
+func (*User) verifyPassword(password, hash string) (bool, error) {
 
 	parts := strings.Split(hash, "$")
 
@@ -69,28 +68,27 @@ func (*User) ComparePassword(password, hash string) (bool, error) {
 	return (subtle.ConstantTimeCompare(decodedHash, comparisonHash) == 1), nil
 }
 
-func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
-
+func NewUser(client DBClient, email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
 	newUser := User{
 		Email:     email,
-		password:  password,
+		Password:  password,
 		Confirmed: confirmed,
 		IsAdmin:   isAdmin,
 		Disabled:  disabled,
 		Roles:     roles,
 	}
-
 	if appMetaData != nil {
 		stringAppMetaData, err := json.Marshal(&appMetaData)
 		if err != nil {
 			return &User{}, errors.Wrap(err, "Unable to marshal appMetaData")
 		}
+		log.Print("stringAppMetaData", stringAppMetaData)
 		newUser.AppMetaData = string(stringAppMetaData)
 	}
 	if userMetaData != nil {
 		stringUserMetaData, err := json.Marshal(&userMetaData)
 		if err != nil {
-			return &User{}, errors.Wrap(err, "Unable to marshal appMetaData")
+			return &User{}, errors.Wrap(err, "Unable to marshal userMetadata")
 		}
 		newUser.UserMetaData = string(stringUserMetaData)
 	}
@@ -102,7 +100,7 @@ func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, 
 		}
 		newUser.Tenant = tenantID
 	}
-	if err := mgm.Coll(&newUser).Create(&newUser); err != nil {
+	if err := client.Save(&newUser); err != nil {
 		return &User{}, errors.Wrap(err, "Unable to create new user")
 	}
 	return &newUser, nil
@@ -114,12 +112,12 @@ func (user *User) Saving() error {
 	if err := user.DefaultModel.Creating(); err != nil {
 		return err
 	}
-	passwordHash, err := user.GeneratePassword(user.getArgonConfig(), user.password)
+	passwordHash, err := user.generatePasswordHash(user.getArgonConfig(), user.Password)
 	if err != nil {
 		log.Print("Unable to hash password")
-		user.password = ""
+		user.Password = ""
 		return errors.Wrap(err, "Unable to hash password")
 	}
-	user.password = passwordHash
+	user.Password = passwordHash
 	return nil
 }

@@ -2,13 +2,24 @@ package api
 
 import (
 	"encoding/json"
+
+	"github.com/futuregerald/futureauth-go/src/functions/db"
 )
 
-// RequestData is the inbound json body this endpoint expects
+// SignupData is what's sent to the signup endpoint and used to create the User model
 type SignupData struct {
-	AppMetadata  json.RawMessage `json:"appMetadata"`
-	Email        string          `json:"email"`
-	Password     string          `json:"password"`
-	Roles        []string        `json:"roles"`
-	UserMetadata json.RawMessage `json:"userMetadata"`
+	ID           string          `json:"id,omitempty"`
+	Email        string          `json:"email" bson:"name" validate:"required,email,max=30,min=6"`
+	Tenant       string          `json:"tenantID" bson:"tenantID,omitempty"`
+	Password     string          `json:"password" bson:"password" validate:"required,max=30,min=6"`
+	AppMetaData  json.RawMessage `json:"appMetaData" bson:"appMetaData"`
+	UserMetaData json.RawMessage `json:"userMetaData" bson:"appMetaData"`
+	Confirmed    bool            `json:"confirmed" bson:"confirmed"`
+	IsAdmin      bool            `json:"isAdmin" bson:"isAdmin"`
+	Disabled     bool            `json:"disabled" bson:"disabled"`
+	Roles        []string        `json:"roles" bson:"roles"`
+}
+
+type Client struct {
+	dbClient db.DBClient
 }
