@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+
+	"github.com/futuregerald/futureauth-go/src/functions/db"
 )
 
 // SignupData is what's sent to the signup endpoint and used to create the User model
@@ -16,4 +18,8 @@ type SignupData struct {
 	IsAdmin      bool            `json:"isAdmin" bson:"isAdmin"`
 	Disabled     bool            `json:"disabled" bson:"disabled"`
 	Roles        []string        `json:"roles" bson:"roles"`
+}
+
+type Client struct {
+	dbClient db.DBClient
 }

@@ -6,8 +6,18 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/kamva/mgm/v3"
+
 	"github.com/stretchr/testify/assert"
 )
+
+type mockDBClient struct {
+}
+
+// TODO add some basic model validationt to mock save method and return error if fails
+func (c *mockDBClient) Save(m mgm.Model) error {
+	return nil
+}
 
 func TestGetSuccess(t *testing.T) {
 	body := `{
@@ -21,8 +31,9 @@ func TestGetSuccess(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	client := New()
-	handler := http.HandlerFunc(client.LambdaHandler)
+	dbClient := &mockDBClient{}
+	a := New(dbClient)
+	handler := http.HandlerFunc(a.LambdaHandler)
 
 	handler.ServeHTTP(rr, req)
 

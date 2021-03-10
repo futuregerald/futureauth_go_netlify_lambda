@@ -13,6 +13,13 @@ type PasswordConfig struct {
 	keyLen  uint32
 }
 
+type Client struct {
+}
+
+type DBClient interface {
+	Save(m mgm.Model) error
+}
+
 type User struct {
 	// DefaultModel add _id,created_at and updated_at fields to the Model
 	mgm.DefaultModel `bson:",inline"`
