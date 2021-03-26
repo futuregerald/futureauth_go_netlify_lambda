@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/gateway"
 	"github.com/futuregerald/futureauth-go/src/functions/db"
+	"github.com/futuregerald/futureauth-go/src/functions/signup/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -30,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Print(errors.Wrap(err, "Unable to start API"))
 	}
-	r.Post("/.netlify/functions/signup", a.LambdaHandler)
+	r.Post("/.netlify/functions/signup", api.LambdaHandler)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" {
 		log.Print("starting signup function")
 		log.Fatal(http.ListenAndServe(":3030", r))
