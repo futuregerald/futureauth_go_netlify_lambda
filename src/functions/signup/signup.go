@@ -23,15 +23,15 @@ func main() {
 	}
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	dbClient, err := db.New()
+	mongoURI := os.Getenv("MONGO_URI")
+	err := db.New(mongoURI)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Unable to create database connnection"))
 	}
-	a := api.New(dbClient)
 	if err != nil {
 		log.Print(errors.Wrap(err, "Unable to start API"))
 	}
-	r.Post("/.netlify/functions/signup", a.LambdaHandler)
+	r.Post("/.netlify/functions/signup", api.LambdaHandler)
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") == "" {
 		log.Print("starting signup function")
 		log.Fatal(http.ListenAndServe(":3030", r))

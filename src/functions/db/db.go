@@ -2,7 +2,6 @@ package db
 
 import (
 	"log"
-	"os"
 
 	"github.com/kamva/mgm/v3"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,15 +13,10 @@ func Connect(uri string) error {
 	return mgm.SetDefaultConfig(nil, "local_dev", options.Client().ApplyURI(uri))
 }
 
-func New() (*Client, error) {
-	mongoURI := os.Getenv("MONGO_URI")
+func New(mongoURI string) error {
 	if mongoURI != "" {
-		return &Client{}, Connect(mongoURI)
+		return Connect(mongoURI)
 	}
 	log.Print("No mongoDB URI provided. Api starting without a data store")
-	return &Client{}, nil
-}
-
-func (client *Client) Save(m mgm.Model) error {
-	return mgm.Coll(m).Create(m)
+	return nil
 }

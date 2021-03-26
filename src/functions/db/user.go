@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/kamva/mgm/v3"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/argon2"
@@ -68,7 +69,7 @@ func (*User) verifyPassword(password, hash string) (bool, error) {
 	return (subtle.ConstantTimeCompare(decodedHash, comparisonHash) == 1), nil
 }
 
-func NewUser(client DBClient, email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
+func NewUser(email, tenant, password string, confirmed, isAdmin, disabled bool, appMetaData, userMetaData json.RawMessage, roles []string) (*User, error) {
 	newUser := User{
 		Email:     email,
 		Password:  password,
@@ -100,7 +101,7 @@ func NewUser(client DBClient, email, tenant, password string, confirmed, isAdmin
 		}
 		newUser.Tenant = tenantID
 	}
-	if err := client.Save(&newUser); err != nil {
+	if err := mgm.Coll(&newUser).Create(&newUser); err != nil {
 		return &User{}, errors.Wrap(err, "Unable to create new user")
 	}
 	return &newUser, nil
