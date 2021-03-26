@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/benweissmann/memongo"
+	"github.com/futuregerald/futureauth-go/src/functions/db"
 	"github.com/kamva/mgm/v3"
 
 	"github.com/stretchr/testify/assert"
@@ -29,11 +31,13 @@ func TestGetSuccess(t *testing.T) {
 }`
 	req, err := http.NewRequest("POST", "/", strings.NewReader(body))
 	assert.NoError(t, err)
-
+	mongoServer, err := memongo.Start("4.0.5")
+	assert.NoError(t, err)
+	defer mongoServer.Stop()
+	err = db.New(mongoServer.URI())
+	assert.NoError(t, err)
 	rr := httptest.NewRecorder()
-	dbClient := &mockDBClient{}
-	a := New(dbClient)
-	handler := http.HandlerFunc(a.LambdaHandler)
+	handler := http.HandlerFunc(LambdaHandler)
 
 	handler.ServeHTTP(rr, req)
 

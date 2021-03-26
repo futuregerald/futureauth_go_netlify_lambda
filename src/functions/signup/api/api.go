@@ -11,7 +11,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func (c *Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
+func LambdaHandler(w http.ResponseWriter, r *http.Request) {
 	validate := validator.New()
 	reqBody, err := ioutil.ReadAll(r.Body)
 	log.Print(len(reqBody))
@@ -47,7 +47,7 @@ func (c *Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if newUser, err := db.NewUser(c.dbClient, req.Email, req.Tenant, req.Password, req.Confirmed, req.IsAdmin, req.Disabled, req.AppMetaData, req.UserMetaData, req.Roles); err != nil {
+	if newUser, err := db.NewUser(req.Email, req.Tenant, req.Password, req.Confirmed, req.IsAdmin, req.Disabled, req.AppMetaData, req.UserMetaData, req.Roles); err != nil {
 		log.Print(err)
 		if err := helpers.SendJSON(w, http.StatusInternalServerError, "Unable to create new user!"); err != nil {
 			log.Print(err)
@@ -63,10 +63,4 @@ func (c *Client) LambdaHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 
-}
-
-func New(dbc db.DBClient) *Client {
-	return &Client{
-		dbClient: dbc,
-	}
 }
