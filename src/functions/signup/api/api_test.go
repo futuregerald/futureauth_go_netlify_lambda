@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/benweissmann/memongo"
-	"github.com/futuregerald/futureauth-go/src/functions/db"
+	"github.com/futuregerald/futureauth-go/src/functions/futureauth"
 	"github.com/kamva/mgm/v3"
 
 	"github.com/stretchr/testify/assert"
@@ -24,17 +24,17 @@ func (c *mockDBClient) Save(m mgm.Model) error {
 func TestGetSuccess(t *testing.T) {
 	body := `{
     "email": "test.account@testing.com",
-    "password":"testingsdf",
-"userMetadata": {"random":"data"},
-"appMetadata": {"random":"data"},
-"roles": ["admin","user"]
-}`
+	"password":"testingsdf",
+	"userMetadata": {"random":"data"},
+	"appMetadata": {"random":"data"},
+	"roles": ["admin","user"]
+	}`
 	req, err := http.NewRequest("POST", "/", strings.NewReader(body))
 	assert.NoError(t, err)
 	mongoServer, err := memongo.Start("4.0.5")
 	assert.NoError(t, err)
 	defer mongoServer.Stop()
-	err = db.New(mongoServer.URI())
+	err = futureauth.New(mongoServer.URI())
 	assert.NoError(t, err)
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(LambdaHandler)

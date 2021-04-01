@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/apex/gateway"
-	"github.com/futuregerald/futureauth-go/src/functions/db"
+	"github.com/futuregerald/futureauth-go/src/functions/futureauth"
 	"github.com/futuregerald/futureauth-go/src/functions/signup/api"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -24,7 +24,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	mongoURI := os.Getenv("MONGO_URI")
-	err := db.New(mongoURI)
+	err := futureauth.New(mongoURI)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "Unable to create database connnection"))
 	}
