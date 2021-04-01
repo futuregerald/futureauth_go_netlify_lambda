@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-func (*User) getArgonConfig() *PasswordConfig {
+func getArgonConfig() *PasswordConfig {
 	return &PasswordConfig{
 		time:    1,
 		memory:  64 * 1024,
@@ -24,7 +24,7 @@ func (*User) getArgonConfig() *PasswordConfig {
 	}
 }
 
-func (*User) generatePasswordHash(c *PasswordConfig, password string) (string, error) {
+func (u *User) generatePasswordHash(c *PasswordConfig) (string, error) {
 
 	// Generate a Salt
 	salt := make([]byte, 16)
@@ -32,7 +32,7 @@ func (*User) generatePasswordHash(c *PasswordConfig, password string) (string, e
 		return "", err
 	}
 
-	hash := argon2.IDKey([]byte(password), salt, c.time, c.memory, c.threads, c.keyLen)
+	hash := argon2.IDKey([]byte(u.Password), salt, c.time, c.memory, c.threads, c.keyLen)
 
 	// Base64 encode the salt and hashed password.
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
@@ -43,9 +43,9 @@ func (*User) generatePasswordHash(c *PasswordConfig, password string) (string, e
 	return full, nil
 }
 
-func (*User) verifyPassword(password, hash string) (bool, error) {
+func (u *User) verifyPassword(password string) (bool, error) {
 
-	parts := strings.Split(hash, "$")
+	parts := strings.Split(u.Password, "$")
 
 	c := &PasswordConfig{}
 	_, err := fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &c.memory, &c.time, &c.threads)
@@ -113,7 +113,7 @@ func (user *User) Saving() error {
 	if err := user.DefaultModel.Creating(); err != nil {
 		return err
 	}
-	passwordHash, err := user.generatePasswordHash(user.getArgonConfig(), user.Password)
+	passwordHash, err := user.generatePasswordHash(getArgonConfig())
 	if err != nil {
 		log.Print("Unable to hash password")
 		user.Password = ""
